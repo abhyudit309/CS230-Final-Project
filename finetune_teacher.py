@@ -5,6 +5,7 @@ import torch
 import torch.optim as optim
 import torch.utils.data as data
 import torch.nn.functional as F
+from torch.optim.lr_scheduler import CosineAnnealingLR
 from torchvision import datasets, transforms
 
 from tqdm import tqdm
@@ -13,9 +14,9 @@ from timm.models.vision_transformer import VisionTransformer
 from utils import prepare_model_for_finetune
 
 
-def log_metrics(epoch: int, loss: float, accuracy: float, file_path: str) -> None:
+def log_metrics(epoch: int, lr: float, loss: float, accuracy: float, file_path: str) -> None:
     with open(file_path, 'a') as file:
-        file.write(f'Epoch: {epoch}, Loss => {loss:.4f}, Accuracy => {accuracy:.2f}%\n')
+        file.write(f'Epoch: {epoch + 1}, LR => {lr:.6f}, Loss => {loss:.4f}, Accuracy => {accuracy:.2f}%\n')
 
 
 def validate_teacher(model: VisionTransformer, val_loader: data.DataLoader) -> T.Tuple[float, float]:
@@ -49,14 +50,15 @@ def finetune_teacher(
     weight_decay: float,
     epochs: int,
     val_freq: int,
-    train_log_file: str = './logs/training_log.txt',
-    val_log_file: str = './logs/validation_log.txt',
-    save_path: str = './models/fine_tuned_teacher.pth',
+    train_log_file: str = './logs/training_log_v2.txt',
+    val_log_file: str = './logs/validation_log_v2.txt',
+    save_path: str = './models/fine_tuned_teacher_v2.pth',
 ) -> None:
     assert epochs % val_freq == 0, "Total epochs should be divisible by validation frequency!"
 
     best_val_loss = np.inf
     optimizer = optim.AdamW(model.head.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    scheduler = CosineAnnealingLR(optimizer=optimizer, T_max=epochs)
 
     for epoch in range(epochs):
         model.train()
@@ -82,17 +84,20 @@ def finetune_teacher(
             total += labels.size(0)
             correct += (pred == labels).sum().item()
 
+        current_lr = scheduler.get_last_lr()[0]
+        scheduler.step()
+        
         avg_loss = running_loss / len(train_loader)
         accuracy = 100 * correct / total
         print(f'Epoch [{epoch + 1}/{epochs}]: Training Loss => {avg_loss:.4f}, Accuracy => {accuracy:.2f}%\n')
-        log_metrics(epoch, avg_loss, accuracy, train_log_file)
+        log_metrics(epoch, current_lr, avg_loss, accuracy, train_log_file)
 
         if (epoch + 1) % val_freq == 0:
             avg_val_loss, val_accuracy = validate_teacher(model, val_loader)
             print(f'Evaluation results for Epoch [{epoch + 1}/{epochs}]:')
             print(f'Validation Loss => {avg_val_loss:.4f}')
             print(f'Validation accuracy => {val_accuracy:.2f}%\n')
-            log_metrics(epoch, avg_val_loss, val_accuracy, val_log_file)
+            log_metrics(epoch, current_lr, avg_val_loss, val_accuracy, val_log_file)
 
             # Checkpoint model
             if avg_val_loss < best_val_loss:
@@ -118,4 +123,4 @@ if __name__ == '__main__':
 
     # Fine-tune teacher model
     teacher_model = prepare_model_for_finetune('vit_base_patch16_224', num_classes=100).to(device)
-    finetune_teacher(teacher_model, train_loader, val_loader, learning_rate=1e-3, weight_decay=1e-4, epochs=2, val_freq=1)
+    finetune_teacher(teacher_model, train_loader, val_loader, learning_rate=1e-3, weight_decay=1e-4, epochs=50, val_freq=5)
