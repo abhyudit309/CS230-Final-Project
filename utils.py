@@ -8,9 +8,9 @@ def count_parameters(model: nn.Module) -> int:
 
 
 def initialize_new_head(layer: nn.Linear):
-    assert isinstance(layer, nn.Linear)
-    nn.init.xavier_uniform_(layer.weight)
-    nn.init.zeros_(layer.bias)
+    if isinstance(layer, nn.Linear):
+        nn.init.xavier_uniform_(layer.weight)
+        nn.init.zeros_(layer.bias)
 
 
 def prepare_model_for_finetune(model_name: str, num_classes: int, use_dropout: bool = False) -> VisionTransformer:
