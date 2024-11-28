@@ -1,0 +1,10 @@
+Epoch: 5, LR => 0.000984, Loss => 0.6688, Accuracy => 80.76%
+Epoch: 10, LR => 0.000922, Loss => 0.6610, Accuracy => 81.14%
+Epoch: 15, LR => 0.000819, Loss => 0.6642, Accuracy => 81.47%
+Epoch: 20, LR => 0.000684, Loss => 0.6787, Accuracy => 81.14%
+Epoch: 25, LR => 0.000531, Loss => 0.6908, Accuracy => 81.40%
+Epoch: 30, LR => 0.000376, Loss => 0.7064, Accuracy => 81.28%
+Epoch: 35, LR => 0.000232, Loss => 0.7135, Accuracy => 81.25%
+Epoch: 40, LR => 0.000115, Loss => 0.7174, Accuracy => 81.22%
+Epoch: 45, LR => 0.000035, Loss => 0.7194, Accuracy => 81.31%
+Epoch: 50, LR => 0.000001, Loss => 0.7197, Accuracy => 81.32%

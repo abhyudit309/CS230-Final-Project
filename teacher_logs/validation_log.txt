@@ -1,0 +1,10 @@
+Epoch: 5, Loss => 0.6864, Accuracy => 80.46%
+Epoch: 10, Loss => 0.6627, Accuracy => 81.12%
+Epoch: 15, Loss => 0.6808, Accuracy => 81.29%
+Epoch: 20, Loss => 0.7043, Accuracy => 81.08%
+Epoch: 25, Loss => 0.7347, Accuracy => 81.06%
+Epoch: 30, Loss => 0.7587, Accuracy => 80.97%
+Epoch: 35, Loss => 0.7936, Accuracy => 80.69%
+Epoch: 40, Loss => 0.8268, Accuracy => 80.58%
+Epoch: 45, Loss => 0.8579, Accuracy => 80.33%
+Epoch: 50, Loss => 0.8864, Accuracy => 80.25%
