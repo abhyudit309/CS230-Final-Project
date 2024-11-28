@@ -11,7 +11,7 @@ from torchvision import datasets, transforms
 from tqdm import tqdm
 from timm.models.vision_transformer import VisionTransformer
 
-from utils import prepare_model_for_finetune
+from utils import prepare_teacher_for_finetune
 
 
 def log_metrics(epoch: int, lr: float, loss: float, accuracy: float, file_path: str) -> None:
@@ -50,9 +50,10 @@ def finetune_teacher(
     weight_decay: float,
     epochs: int,
     val_freq: int,
-    train_log_file: str = './logs/training_log_v3.txt',
-    val_log_file: str = './logs/validation_log_v3.txt',
-    save_path: str = './models/fine_tuned_teacher_v3.pth',
+    train_log_file: str = './teacher_logs/training_log_v6.txt',
+    val_log_file: str = './teacher_logs/validation_log_v6.txt',
+    save_path: str = './teacher_models/fine_tuned_teacher_v6.pth',
+    final_path: str = './teacher_models/fine_tuned_teacher_v6_final.pth',
 ) -> None:
     assert epochs % val_freq == 0, "Total epochs should be divisible by validation frequency!"
 
@@ -105,31 +106,34 @@ def finetune_teacher(
                 best_val_loss = avg_val_loss
                 torch.save(model.state_dict(), save_path)
 
+        # Save final model as well
+        if epoch + 1 == epochs:
+            torch.save(model.state_dict(), final_path)
+
 
 if __name__ == '__main__':
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     # Loading dataset
-    train_transforms = transforms.Compose([
-        transforms.RandomResizedCrop(224, scale=(0.8, 1.0)),
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomRotation(15),
-        transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ])
+    # train_transforms = transforms.Compose([
+    #     transforms.Resize((224, 224)),
+    #     transforms.RandomHorizontalFlip(),
+    #     transforms.RandomRotation(15),
+    #     transforms.ToTensor(),
+    #     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    # ])
     
-    val_transforms = transforms.Compose([
+    transform = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
-    train_dataset = datasets.CIFAR100(root='./data', train=True, transform=train_transforms, download=True)
-    val_dataset = datasets.CIFAR100(root='./data', train=False, transform=val_transforms, download=True)
+    train_dataset = datasets.CIFAR100(root='./data', train=True, transform=transform, download=True)
+    val_dataset = datasets.CIFAR100(root='./data', train=False, transform=transform, download=True)
 
     train_loader = data.DataLoader(train_dataset, batch_size=512, shuffle=True, num_workers=4)
     val_loader = data.DataLoader(val_dataset, batch_size=512, shuffle=False, num_workers=4)
 
     # Fine-tune teacher model
-    teacher_model = prepare_model_for_finetune('vit_base_patch16_224', num_classes=100, use_dropout=True).to(device)
+    teacher_model = prepare_teacher_for_finetune('vit_base_patch16_224', num_classes=100).to(device)
     finetune_teacher(teacher_model, train_loader, val_loader, learning_rate=1e-3, weight_decay=1e-4, epochs=50, val_freq=5)
