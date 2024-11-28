@@ -138,12 +138,12 @@ if __name__ == '__main__':
     train_dataset = datasets.CIFAR100(root='./data', train=True, transform=transform, download=True)
     val_dataset = datasets.CIFAR100(root='./data', train=False, transform=transform, download=True)
 
-    train_loader = data.DataLoader(train_dataset, batch_size=512, shuffle=True, num_workers=4)
-    val_loader = data.DataLoader(val_dataset, batch_size=512, shuffle=False, num_workers=4)
+    train_loader = data.DataLoader(train_dataset, batch_size=256, shuffle=True, num_workers=4)
+    val_loader = data.DataLoader(val_dataset, batch_size=256, shuffle=False, num_workers=4)
 
     # Train Student Model
     teacher_model = load_teacher_for_distillation('vit_base_patch16_224', num_classes=100, path='./teacher_models/fine_tuned_teacher_v5_final.pth').to(device)
-    student_model = prepare_student_for_training('deit_tiny_patch16_224', num_classes=100).to(device)
+    student_model = prepare_student_for_training('mobilenetv3_small_100', num_classes=100).to(device)
 
     print(f'Number of parameters in teacher => {count_parameters(teacher_model) / 1e6}M')
     print(f'Number of parameters in student => {count_parameters(student_model) / 1e6}M')
