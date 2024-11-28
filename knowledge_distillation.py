@@ -54,10 +54,10 @@ def train_student(
     temperature: float,
     distillation_weight: float,
     val_freq: int,
-    train_log_file: str = './student_logs/training_log_v1.txt',
-    val_log_file: str = './student_logs/validation_log_v1.txt',
-    save_path: str = './student_models/trained_student_v1.pth',
-    final_path: str = './student_models/trained_student_v1_final.pth',
+    train_log_file: str = './student_logs/mobilenet_training_log_v1.txt',
+    val_log_file: str = './student_logs/mobilenet_validation_log_v1.txt',
+    save_path: str = './student_models/mobilenet_trained_student_v1.pth',
+    final_path: str = './student_models/mobilenet_trained_student_v1_final.pth',
 ) -> None:
     assert 0.0 <= distillation_weight <= 1.0, 'Distillation weight should be in the range [0, 1]!'
     assert epochs % val_freq == 0, "Total epochs should be divisible by validation frequency!"
@@ -142,7 +142,7 @@ if __name__ == '__main__':
     val_loader = data.DataLoader(val_dataset, batch_size=256, shuffle=False, num_workers=4)
 
     # Train Student Model
-    teacher_model = load_teacher_for_distillation('vit_base_patch16_224', num_classes=100, path='./teacher_models/fine_tuned_teacher_v5_final.pth').to(device)
+    teacher_model = load_teacher_for_distillation('vit_base_patch16_224', num_classes=100, path='./teacher_models/fine_tuned_teacher_v6_final.pth').to(device)
     student_model = prepare_student_for_training('mobilenetv3_small_100', num_classes=100).to(device)
 
     print(f'Number of parameters in teacher => {count_parameters(teacher_model) / 1e6}M')
@@ -155,7 +155,7 @@ if __name__ == '__main__':
         val_loader, 
         learning_rate=1e-3, 
         weight_decay=1e-4, 
-        epochs=3,
+        epochs=50,
         temperature=3.0,
         distillation_weight=0.5,
         val_freq=1,
