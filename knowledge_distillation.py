@@ -54,10 +54,10 @@ def train_student(
     temperature: float,
     distillation_weight: float,
     val_freq: int,
-    train_log_file: str = './student_logs/mobilenet_training_log_v1.txt',
-    val_log_file: str = './student_logs/mobilenet_validation_log_v1.txt',
-    save_path: str = './student_models/mobilenet_trained_student_v1.pth',
-    final_path: str = './student_models/mobilenet_trained_student_v1_final.pth',
+    train_log_file: str = './student_logs/deit_training_log_v1.txt',
+    val_log_file: str = './student_logs/deit_validation_log_v1.txt',
+    save_path: str = './student_models/deit_trained_student_v1.pth',
+    final_path: str = './student_models/deit_trained_student_v1_final.pth',
 ) -> None:
     assert 0.0 <= distillation_weight <= 1.0, 'Distillation weight should be in the range [0, 1]!'
     assert epochs % val_freq == 0, "Total epochs should be divisible by validation frequency!"
@@ -130,20 +130,28 @@ if __name__ == '__main__':
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     # Loading dataset
-    transform = transforms.Compose([
+    train_transforms = transforms.Compose([
+        transforms.RandomResizedCrop(224, scale=(0.9, 1.0)),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomRotation(15),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
+
+    val_transforms = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
-    train_dataset = datasets.CIFAR100(root='./data', train=True, transform=transform, download=True)
-    val_dataset = datasets.CIFAR100(root='./data', train=False, transform=transform, download=True)
+    train_dataset = datasets.CIFAR100(root='./data', train=True, transform=val_transforms, download=True)
+    val_dataset = datasets.CIFAR100(root='./data', train=False, transform=val_transforms, download=True)
 
     train_loader = data.DataLoader(train_dataset, batch_size=256, shuffle=True, num_workers=4)
     val_loader = data.DataLoader(val_dataset, batch_size=256, shuffle=False, num_workers=4)
 
     # Train Student Model
     teacher_model = load_teacher_for_distillation('vit_base_patch16_224', num_classes=100, path='./teacher_models/fine_tuned_teacher_v6_final.pth').to(device)
-    student_model = prepare_student_for_training('mobilenetv3_small_100', num_classes=100).to(device)
+    student_model = prepare_student_for_training('deit_tiny_patch16_224', num_classes=100).to(device)
 
     print(f'Number of parameters in teacher => {count_parameters(teacher_model) / 1e6}M')
     print(f'Number of parameters in student => {count_parameters(student_model) / 1e6}M')
