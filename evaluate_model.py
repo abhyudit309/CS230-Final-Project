@@ -10,6 +10,8 @@ from timm.models.mobilenetv3 import MobileNetV3
 from timm.models.vision_transformer import VisionTransformer
 from timm import create_model
 
+from utils import count_parameters
+
 
 def load_model_for_eval(model_name: str, num_classes: int, path: str) -> T.Union[MobileNetV3, VisionTransformer]:
     model: T.Union[MobileNetV3, VisionTransformer] = create_model(model_name, pretrained=False)
@@ -71,10 +73,13 @@ if __name__ == '__main__':
     val_loader = data.DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4)
 
     # Evaluate Models
-    model = load_model_for_eval('deit_tiny_patch16_224', num_classes=100, path='./student_models/deit_trained_student_v6_final.pth').to(device)
+    model = load_model_for_eval('mobilenetv3_small_100', num_classes=100, path='./student_models/mobilenet_trained_student_v3_final.pth').to(device)
+    num_parameters_M = count_parameters(model) / 1e6
+    print(f"Number of parameters => {num_parameters_M:.2f} M")
+    
     top1_accuracy, top3_accuracy, top5_accuracy, avg_inference_time_per_batch = evaluate_model(model, val_loader)
 
-    print(f"Top-1 Accuracy: {top1_accuracy:.2f}%")
-    print(f"Top-3 Accuracy: {top3_accuracy:.2f}%")
-    print(f"Top-5 Accuracy: {top5_accuracy:.2f}%")
-    print(f"Average Inference time per batch (batch size = {batch_size}): {avg_inference_time_per_batch:.2f} ms")
+    print(f"Top-1 Accuracy => {top1_accuracy:.2f}%")
+    print(f"Top-3 Accuracy => {top3_accuracy:.2f}%")
+    print(f"Top-5 Accuracy => {top5_accuracy:.2f}%")
+    print(f"Average Inference time per batch (batch size = {batch_size}) => {avg_inference_time_per_batch:.2f} ms")
