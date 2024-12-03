@@ -54,10 +54,10 @@ def train_student(
     temperature: float,
     distillation_weight: float,
     val_freq: int,
-    train_log_file: str = './student_logs/deit_training_log_v1.txt',
-    val_log_file: str = './student_logs/deit_validation_log_v1.txt',
-    save_path: str = './student_models/deit_trained_student_v1.pth',
-    final_path: str = './student_models/deit_trained_student_v1_final.pth',
+    train_log_file: str = './student_logs/deit_training_log_v4.txt',
+    val_log_file: str = './student_logs/deit_validation_log_v4.txt',
+    save_path: str = './student_models/deit_trained_student_v4.pth',
+    final_path: str = './student_models/deit_trained_student_v4_final.pth',
 ) -> None:
     assert 0.0 <= distillation_weight <= 1.0, 'Distillation weight should be in the range [0, 1]!'
     assert epochs % val_freq == 0, "Total epochs should be divisible by validation frequency!"
@@ -143,7 +143,7 @@ if __name__ == '__main__':
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
-    train_dataset = datasets.CIFAR100(root='./data', train=True, transform=val_transforms, download=True)
+    train_dataset = datasets.CIFAR100(root='./data', train=True, transform=train_transforms, download=True)
     val_dataset = datasets.CIFAR100(root='./data', train=False, transform=val_transforms, download=True)
 
     train_loader = data.DataLoader(train_dataset, batch_size=256, shuffle=True, num_workers=4)
@@ -165,7 +165,7 @@ if __name__ == '__main__':
         weight_decay=1e-4, 
         epochs=50,
         temperature=3.0,
-        distillation_weight=0.5,
+        distillation_weight=1.0,
         val_freq=1,
     )
 

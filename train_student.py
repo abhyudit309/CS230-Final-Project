@@ -51,10 +51,10 @@ def train_student(
     weight_decay: float,
     epochs: int,
     val_freq: int,
-    train_log_file: str = './student_logs/mobilenet_training_log_v5.txt',
-    val_log_file: str = './student_logs/mobilenet_validation_log_v5.txt',
-    save_path: str = './student_models/mobilenet_trained_student_v5.pth',
-    final_path: str = './student_models/mobilenet_trained_student_v5_final.pth',
+    train_log_file: str = './student_logs/deit_training_log_v6.txt',
+    val_log_file: str = './student_logs/deit_validation_log_v6.txt',
+    save_path: str = './student_models/deit_trained_student_v6.pth',
+    final_path: str = './student_models/deit_trained_student_v6_final.pth',
 ) -> None:
     assert epochs % val_freq == 0, "Total epochs should be divisible by validation frequency!"
 
@@ -136,6 +136,6 @@ if __name__ == '__main__':
     val_loader = data.DataLoader(val_dataset, batch_size=256, shuffle=False, num_workers=4)
 
     # Train Student Model
-    student_model = prepare_student_for_training('mobilenetv3_small_100', num_classes=100).to(device)
+    student_model = prepare_student_for_training('deit_tiny_patch16_224', num_classes=100).to(device)
     train_student(student_model, train_loader, val_loader, learning_rate=1e-3, weight_decay=1e-4, epochs=50, val_freq=1)
     print('Training complete and models saved!')
